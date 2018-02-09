@@ -1,5 +1,9 @@
+#include <chrono>
+#include <sstream>
 #include <algorithm>
 #include <ros/ros.h>
+#include <ros/package.h>
+#include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/filter.h>
 #include <pcl_ros/point_cloud.h>
@@ -7,14 +11,12 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 
-int more;
 ros::Publisher pub;
-std::string in_topic;
+std::string in_topic, path;
 double width, length, tolerance;
-int red_value, green_value, blue_value, sx, sy;
+int more, red_value, green_value, blue_value, sx, sy;
 
 void cloud_callback (const sensor_msgs::PointCloud2& msg){
-
     more = 0;
 
     pcl::PCLPointCloud2 pcl_cloud;
@@ -40,10 +42,12 @@ void cloud_callback (const sensor_msgs::PointCloud2& msg){
                     }
                 }
             }*/
-            double maxw = 0.f;
-            double maxl = 0.f;
-            for(unsigned k=i;k<cloud.width;k++){
-                for(unsigned l=j;l<cloud.height;l++){
+            double maxw = 0;
+            double maxl = 0;
+            unsigned maxi = 0;
+            unsigned maxj = 0;
+            for(unsigned l=j;l<cloud.height;l++){
+                for(unsigned k=i;k<cloud.width;k++){
                     if(!(std::isnan(cloud.at(k,l).x) or 
                         std::isnan(cloud.at(k,l).y) or 
                         std::isnan(cloud.at(k,l).z) or 
@@ -65,6 +69,12 @@ void cloud_callback (const sensor_msgs::PointCloud2& msg){
                         }
                         if(w < 0){
                             w = -w;
+                        }
+                        if(k > maxi){
+                            maxi = k;
+                        }
+                        if(l > maxj){
+                            maxj = l;
                         }
                         if(ll <= length and w <= width){
                             cloud.at(k,l).r = red_value;
@@ -107,7 +117,21 @@ void cloud_callback (const sensor_msgs::PointCloud2& msg){
                     more = -1;
                 }
                 else if(input != "--skip" and input != "-s"){
-
+                    pcl::PointCloud<pcl::PointXYZRGB> tmpcloud;
+                    for(unsigned jj=j; jj<maxj; jj++){
+                        for(unsigned ii=i; ii<maxi; ii++){
+                            tmpcloud.push_back(cloud.at(ii,jj));
+                        }
+                    }
+                    tmpcloud.width = maxi - i;
+                    tmpcloud.height = maxj - j;
+                    long int now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::string s;
+                    std::stringstream ss;
+                    ss << now;
+                    s = ss.str();
+                    pcl::io::savePCDFileASCII (path+"/data/"+input+"_"+s+".pcd", tmpcloud);
+                    std::cout << "\033[1;32mWrote\033[0m \033[1;31m" + path+"/data/"+input+"_"+s+".pcd" + "\033[0m \033[1;32mto disk!\033[0m" << std::endl;
                 }
             }
         }
@@ -145,6 +169,8 @@ int main (int argc, char** argv){
     nh.param("pointcloud_annotator/red_value", red_value, 255);
     nh.param("pointcloud_annotator/green_value", green_value, 255);
     nh.param("pointcloud_annotator/blue_value", blue_value, 0);
+
+    path = ros::package::getPath("pointcloud_annotator");
 
     ros::Subscriber sub = nh.subscribe (in_topic, 1, cloud_callback);
 
