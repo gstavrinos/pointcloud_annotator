@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<launch>
+    <node pkg="pointcloud_annotator" type="pointcloud_annotator" respawn="false" name="pointcloud_annotator" output="screen">
+        <rosparam file="$(find pointcloud_annotator)/config/pointcloud_annotator.yaml" command="load" />
+    </node>
+</launch>
