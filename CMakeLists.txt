@@ -5,7 +5,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  pcl_ros
   sensor_msgs
+  pcl_conversions
 )
 catkin_package()
 
