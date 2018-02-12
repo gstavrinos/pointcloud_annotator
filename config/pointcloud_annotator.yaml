@@ -1,5 +1,8 @@
 
-input_topic: "zed/point_cloud/cloud_registered/limitcloud"
+input_topic: "zed/point_cloud/cloud_registered"
+# set this to true to use robot dimensions
+use_robot_size: true
+
 # Robot width in meters
 width: 0.55
 # Robot length in meters

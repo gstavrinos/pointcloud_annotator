@@ -1,0 +1,18 @@
+
+input_topic: "zed/point_cloud/cloud_registered"
+# set this to false to use point dimensions
+use_robot_size: false
+
+# Width in points
+width: 60
+# Length in points
+length: 80
+
+# Points in the cloud to slide
+slide_x: 20
+slide_y: 20
+
+# Yellow
+red_value: 255
+green_value: 255
+blue_value: 0
