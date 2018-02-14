@@ -1,0 +1,3 @@
+string annotation
+---
+sensor_msgs/PointCloud2[] set_of_points
